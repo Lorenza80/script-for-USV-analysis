@@ -3,7 +3,10 @@
 list_usv <-function() {
   
   filenames <- list.files(pattern="*.txt")
+  filenames_no_ext <- gsub(".txt", "", filenames)
   library (plyr)
-  df <- ldply (filenames, data.frame)
+  df <- ldply (filenames_no_ext, data.frame)
   colnames(df) <- "ID"
-  
+  write.csv(df, file = "USV_ID.csv", row.names = FALSE)
+  return("USV_ID.csv correctly created in the working directory")
+}
