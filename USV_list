@@ -1,0 +1,9 @@
+##list_usv function lo list files in folder USV
+
+list_usv <-function() {
+  
+  filenames <- list.files(pattern="*.txt")
+  library (plyr)
+  df <- ldply (filenames, data.frame)
+  colnames(df) <- "ID"
+  
