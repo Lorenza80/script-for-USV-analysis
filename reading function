@@ -1,0 +1,94 @@
+## function to read txt files from USV recording (output from AvisoftSasLabPro)
+
+##data.table package required
+
+## 1) reading and naming files
+
+substitute_underscore <- function(file, fill, path) {
+  full_path <- paste(path, file, sep = "/")
+  val <- read.table(file = full_path, fill = fill, stringsAsFactors = FALSE)
+  if (val [1,3] == "_") {
+    val [1,3] = "0"
+    val [,3] = as.numeric(val [,3])
+  }
+  return (val)
+}
+
+reading_function <- function(path) {
+  
+  myPath <- path
+  
+  filenames <- list.files(path = myPath, pattern = "*.txt")
+  filenames_no_ext <- gsub(".txt", "", filenames)
+
+  read_files <- lapply(filenames, substitute_underscore, fill = TRUE, path = myPath)   #NEW
+
+##  read_files <- lapply(filenames, read.table, fill = TRUE)   #OLD
+
+
+## 2) adding column headings
+
+  colnames_1 <- c("N", "Duration", "Interval", "Elements", "PeakFreqStart", 
+                "PeakAmplStart", "PeakFreqEnd", "PeakAmplEnd", 
+                "PeakFreqCentre", "PeakAmplCentre")
+
+  result <- lapply(read_files, function(x) {
+      colnames(x) <- paste(colnames_1)
+      return(x)
+      })
+
+  names(result) <- filenames
+  
+## 3) generating summary for each column of each file
+
+    number_of_files <- length(result)
+
+    N_max_vector <- c()
+    Duration_mean_vector <- c()
+    Interval_mean_vector <- c()
+    Elements_mean_vector <- c()
+    PeakFreqStart_mean_vector <- c()
+    PeakAmplStart_mean_vector <- c()
+    PeakFreqEnd_mean_vector <- c()
+    PeakAmplEnd_mean_vector <- c()
+    PeakFreqCentre_mean_vector <- c()
+    PeakAmplCentre_mean_vector <- c()
+
+    for (i in 1:number_of_files) {
+      
+      N_max_vector <- round(append(N_max_vector, max(result[[filenames[i]]]$N)), 3)
+      Duration_mean_vector <- round(append(Duration_mean_vector, mean(result[[filenames[i]]]$Duration)), 3)
+      Interval_mean_vector <- round(append(Interval_mean_vector, mean(result[[filenames[i]]]$Interval)), 3)
+      Elements_mean_vector <- round(append(Elements_mean_vector, mean(result[[filenames[i]]]$Elements)), 3)
+      PeakFreqStart_mean_vector <- round(append(PeakFreqStart_mean_vector, mean(result[[filenames[i]]]$PeakFreqStart)), 3)
+      PeakAmplStart_mean_vector <- round(append(PeakAmplStart_mean_vector, mean(result[[filenames[i]]]$PeakAmplStart)), 3)
+      PeakFreqEnd_mean_vector <- round(append(PeakFreqEnd_mean_vector, mean(result[[filenames[i]]]$PeakFreqEnd)), 3)
+      PeakAmplEnd_mean_vector <- round(append(PeakAmplEnd_mean_vector, mean(result[[filenames[i]]]$PeakAmplEnd)), 3)
+      PeakFreqCentre_mean_vector <- round(append(PeakFreqCentre_mean_vector, mean(result[[filenames[i]]]$PeakFreqCentre)), 3)
+      PeakAmplCentre_mean_vector <- round(append(PeakAmplCentre_mean_vector, mean(result[[filenames[i]]]$PeakAmplCentre)), 3)
+      
+    }
+
+## 4) summarising the results of all files in a new dataframe (for each element 
+##  of the list -file- extract total N, mean duration, mean interval, mean 
+##  element,min/max/min of peak fred/ampl start/end) 
+
+    final_dataframe <- cbind(N_max_vector, Duration_mean_vector, Interval_mean_vector, Elements_mean_vector, PeakFreqStart_mean_vector, PeakAmplStart_mean_vector, PeakFreqEnd_mean_vector, PeakAmplEnd_mean_vector, PeakFreqCentre_mean_vector, PeakAmplCentre_mean_vector)
+    
+    colnames_2 <- c("N Obs", "Mean Duration", "Mean Interval", "Mean Elements", "Mean PeakFreqStart", 
+                    "Mean PeakAmplStart", "Mean PeakFreqEnd", "Mean PeakAmplEnd", 
+                    "Mean PeakFreqCentre", "Mean PeakAmplCentre")
+
+    colnames(final_dataframe) <- paste(colnames_2)
+
+    ID <- as.numeric(filenames_no_ext)
+    final_dataframe <- cbind(ID, final_dataframe)
+
+    path_filename_for_ouput <- paste(myPath, "/USV_DF.csv", sep = "")
+    final_message <- paste("USV_df.csv correctly created in ", myPath, sep = "")
+  
+    write.csv(final_dataframe, file = path_filename_for_ouput, row.names = FALSE)
+    
+    return(final_message)
+
+}
