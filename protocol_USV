@@ -1,0 +1,37 @@
+##protocol  USV analysis
+
+##setting working directory
+
+##creating csv file using reading_function (video file name as ID)
+
+##tyding data before proceeding (check if nas have been introduced, check ther's no strange value)
+
+USVL <- read.csv("USV_DF.csv") 
+
+##reading csv containing info about videos and subjects
+
+USVL_list <- read.csv("list name.csv") #list file in same folder
+
+##tyding csv containing info about videos and subjects
+
+##merging csv
+
+merged_USVL <- merge(USVL, USVL_list, by.x = "ID") 
+
+##creating merged file
+
+write.csv(merged_USVL, file = "USVL merged.csv", row.names = FALSE)
+  
+##loading dplyr and filtering by age and gender eg P4 males
+
+P4M <- filter(merged_USV2, age == "P4", sex =="M")
+
+##statistics
+# merged_USV2 %>%
+#   group_by(age, sex, genotype) %>%
+#   select(arr_delay, dep_delay) %>%
+#   summarise(
+#     arr = mean(arr_delay, na.rm = TRUE),
+#     dep = mean(dep_delay, na.rm = TRUE)
+#   ) %>%
+#   filter(arr > 30 | dep > 30)
